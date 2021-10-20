@@ -2,132 +2,197 @@
 using System.Collections.Generic;
 using System.IO;
 using static System.Console;
-
+using System.Text;
+using System.Linq;
 namespace BlackJack
 {
     class Program
     {
-        
+        public static ProgramController pc;
+        public static DeckController dc;
+        public static DealerController dealControl;
+        public static List<Card> Shoe = new List<Card>();
+        public static int PlayerCash;
+       
         static void Main(string[] args)
         {
             System.Console.BackgroundColor = ConsoleColor.Green;
             Clear();
             ForegroundColor = ConsoleColor.Black;
-
             WriteLine("\t\t\t\t\t\tWelcome to BlackJack\n");
-            ProgramController pc = new ProgramController();
+            pc = new ProgramController();
+            dealControl = new DealerController();
             pc.Timing();
             pc.PlayerEnter();
-            pc.Timing();
             pc.GetChips();
-            DeckController dc = new DeckController();
-            dc.CreateShoe();
-            dc.Shuffle();
-            //List<Card> l = dc.shoe;
+            PlayerCash = pc.p.Cash;
+            WriteLine(pc.p.Cash + " is player Cash");
+            Shoe = dealControl.shoe;
+            //dc = new DeckController();
             
-            DealerController dealControl = new DealerController();
-            while(dc.shoe.Count > 13)
+            
+            char response;
+            while(dealControl.shoe.Count > 13)
             {
-                int wager = pc.Wager();
-                if(wager <= 0)
+                pc.Wager();
+                                
+                while (pc.p.Wager <= 0)
                 {
-                    pc.GetChips();
+                    WriteLine("You must bet to play!");
+                    pc.Timing();
+                    Console.WriteLine("Would you like continue?(y/n)");
+                    response = Console.ReadLine().ToUpper().FirstOrDefault();
+                    switch (response)
+                    {
+                        case 'Y':
+                            pc.Wager();
+                            break;
+                        default:
+                            WriteLine("Game Closing");
+                            Environment.Exit(0);
+                            break;
+
+                    }
+
+
                 }
-                pc.GetCards(dc.shoe[0], dc.shoe[1]);
+                pc.GetCards(dealControl.shoe[0], dealControl.shoe[1]);
                 pc.Timing();
-                dc.shoe.RemoveAt(0);
-                dc.shoe.RemoveAt(0);
-                dealControl.GetCards(dc.shoe[0], dc.shoe[1]);
-                dc.shoe.RemoveAt(0);
-                dc.shoe.RemoveAt(0);
+                dealControl.shoe.RemoveAt(0);
+                dealControl.shoe.RemoveAt(0);
+                dealControl.GetCards();
+                
+                if (dealControl.ins == 1)
+                {
+                    int purchased = dealControl.GetInsurance(pc.p.Wager);
+                    if (purchased == 1)
+                        pc.p.Cash -= pc.p.Wager / 2;
+                    dealControl.CheckBlackJack();
+                }
                 int choice = 0;
+
                 //now player decides hit, split, etc.
-                if(pc.p.Hand[0].Value == pc.p.Hand[1].Value)
-                {
-                    Console.WriteLine("Current options: 1:Stay\t2:Hit\t3:Split\t4:Double Down");
-                    bool chose = false;
-                    while (chose == false)
-                    {
-                        Console.WriteLine("What would you like to do?");
-                        try
-                        {
-                            string input = Console.ReadLine();
-                            choice = int.Parse(input);
-                            if ((choice > 0) && (choice < 5))
-                            {
-                                chose = true;
-                            }
-                            else
-                            {
-                                chose = false;
-                            }
-                        }
-                        catch (Exception)
-                        {
-                            Console.WriteLine("Invalid entry");
-
-                        }
-                        switch (choice)
-                        {
-                            case 1:
-                                Console.WriteLine("Staying...");
-                                break; //do nothing
-                            case 2:
-                                dealControl.Hit();
-                                break;
-                            case 3:
-                                dealControl.Split();
-                                break;
-                            case 4:
-                                dealControl.DoubleDown();
-                                break;
-                        }
-                    }
-                    
-                }
-                else
-                {
-                    Console.WriteLine("Current options: 1:Stay\t2:Hit\t4:Double Down");
-                    bool chose = false;
-                    while (chose == false)
-                    {
-                        Console.WriteLine("What would you like to do?");
-                        try
-                        {
-                            string input = Console.ReadLine();
-                            choice = int.Parse(input);
-                            if ((choice > 0) && (choice < 5) && (choice != 3))
-                            {
-                                chose = true;
-                            }
-                            else
-                            {
-                                chose = false;
-                            }
-                        }
-                        catch (Exception)
-                        {
-                            Console.WriteLine("Invalid entry");
-
-                        }
-                        switch (choice)
-                        {
-                            case 1:
-                                Console.WriteLine("Staying...");
-                                break; //do nothing
-                            case 2:
-                                dealControl.Hit();
-                                break;
-                            case 4:
-                                dealControl.DoubleDown();
-                                break;
-                        }
-                    }
-                }
-
+                Decisions();
+                
                 
             }
 
-    }
+        }
+        public static void Hit()
+        {
+            //List<Card> curHand = new List<Card>();
+            //curHand = _pHand;
+            //List<Card> curShoe = new List<Card>();
+            //curShoe = _dShoe;
+            pc.p.Hand.Add(dealControl.shoe[0]);
+            Console.WriteLine(pc.p.Name + "'s hand:");
+            string message = "";
+            for (int i = 0; i < pc.p.Hand.Count; i++)
+            {
+                message += (pc.p.Hand[i].Holder + "" + pc.p.Hand[i].Suit + " ");
+                
+
+            }
+            Console.WriteLine(message);
+            Decisions();
+
+
+        }
+        public static void Result(List<Card> _pHand, List<Card> _Shoe)
+        {
+            pc.p.Hand = _pHand;
+            Shoe = _Shoe;
+        }
+        public static void Decisions()
+        {
+            int choice = 0;
+            //List<Card> hand = new List<Card>();
+            //List<Card> shoe = new List<Card>();
+            //shoe = _shoe;
+            //hand = _hand;
+            //bool hasSplit = false;
+            
+
+            if ((pc.p.Hand.Count == 2) && (pc.p.Hand[0].Value == pc.p.Hand[1].Value))
+            {
+                Console.WriteLine("Current options: 1:Stay\t2:Hit\t3:Split\t4:Double Down");
+                bool chose = false;
+                while (chose == false)
+                {
+                    Console.WriteLine("What would you like to do?");
+                    try
+                    {
+                        string input = Console.ReadLine();
+                        choice = int.Parse(input);
+                        if ((choice > 0) && (choice < 5))
+                        {
+                            chose = true;
+                        }
+                        else
+                        {
+                            chose = false;
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        Console.WriteLine("Invalid entry");
+
+                    }
+                    switch (choice)
+                    {
+                        case 1:
+                            Console.WriteLine("Staying...");
+                            break; //do nothing
+                        case 2:
+                            Hit();
+                            break;
+                        case 3:
+                            //Split();
+                            break;
+                        case 4:
+                            //DoubleDown();
+                            break;
+                    }
+                }
+                
+            }
+            else
+            {
+                Console.WriteLine("Current options: 1:Stay\t2:Hit");
+                bool chose = false;
+                while (chose == false)
+                {
+                    Console.WriteLine("What would you like to do?");
+                    try
+                    {
+                        string input = Console.ReadLine();
+                        choice = int.Parse(input);
+                        if ((choice > 0) && (choice < 5) && (choice != 3)&& (choice != 4))
+                        {
+                            chose = true;
+                        }
+                        else
+                        {
+                            chose = false;
+                        }
+                    }
+                    catch (Exception)
+                    {
+                        Console.WriteLine("Invalid entry");
+
+                    }
+                    switch (choice)
+                    {
+                        case 1:
+                            Console.WriteLine("Staying...");
+                            break; //do nothing
+                        case 2:
+                            Hit();
+                            break;
+                    }
+                }
+                
+            }
+        }
     }
 }

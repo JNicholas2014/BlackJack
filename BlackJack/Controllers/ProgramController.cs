@@ -44,7 +44,7 @@ namespace BlackJack
             bool hasCash = false;
             while(hasCash == false)
             {
-                Console.WriteLine("Enter the amount of cash you would like to play with...");
+                Console.WriteLine("Enter the amount of Chips you would like to purchase...");
                 try
                 {
                     string input = Console.ReadLine();
@@ -69,31 +69,34 @@ namespace BlackJack
             }
             
         }
-        public int Wager()
+        public void Wager()
         {
             Console.WriteLine("Enter the amount to wager...");
+            int num;
+            
             try
             {
                 string input = Console.ReadLine();
-                int num = int.Parse(input);
+                num = int.Parse(input);
                 if ((num <= p.Cash) && (p.Cash > 0))
                 {
                     p.Cash -= num;
-                    return num;
+                    p.Wager = num;
                 }
                 else if (p.Cash <= 0)
                 {
                     Console.WriteLine("It looks like you are out of chips");
                     num = 0;
-                    return num;
+                    p.Wager = num;
                 }
             }
             catch (Exception)
             {
                 Console.WriteLine("Invalid entry");
+                Wager();
                
             }
-            return 0;
+            
         }
 
         public void GetCards(Card firstCard, Card secondCard)
