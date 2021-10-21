@@ -12,7 +12,7 @@ namespace BlackJack
         public static DeckController dc;
         public static DealerController dealControl;
         public static List<Card> Shoe = new List<Card>();
-        public static int PlayerCash;
+        public static double PlayerCash;
        
         static void Main(string[] args)
         {
@@ -32,7 +32,11 @@ namespace BlackJack
             
             
             char response;
-            while(dealControl.shoe.Count > 13)
+            if (dealControl.shoe.Count <= 13)
+            {
+                dealControl = new DealerController();
+            }
+            while (dealControl.shoe.Count > 13)
             {
                 pc.Wager();
                                 
@@ -76,46 +80,59 @@ namespace BlackJack
                 
                 
             }
+            
 
+        }
+        public static void GetValue()
+        {
+            int sum = 0;
+            bool hasAce = false;
+            for (int i = 0; i < pc.p.Hand.Count; i++)
+            {
+                if (pc.p.Hand[i].Holder.Equals("Ace"))
+                {
+                    hasAce = true;
+                    sum += 10;
+                }
+                sum += pc.p.Hand[i].Value;
+            }
+            if ((sum > 21) && (hasAce == true))
+            {
+                sum -= 9;
+            }
         }
         public static void Hit()
         {
-            //List<Card> curHand = new List<Card>();
-            //curHand = _pHand;
-            //List<Card> curShoe = new List<Card>();
-            //curShoe = _dShoe;
+            
             pc.p.Hand.Add(dealControl.shoe[0]);
+            dealControl.shoe.RemoveAt(0);
             Console.WriteLine(pc.p.Name + "'s hand:");
             string message = "";
             for (int i = 0; i < pc.p.Hand.Count; i++)
             {
                 message += (pc.p.Hand[i].Holder + "" + pc.p.Hand[i].Suit + " ");
-                
-
             }
             Console.WriteLine(message);
+            
+            
             Decisions();
 
 
         }
-        public static void Result(List<Card> _pHand, List<Card> _Shoe)
+        public static void Result()
         {
-            pc.p.Hand = _pHand;
-            Shoe = _Shoe;
+            int pBJ = pc.CheckBlackJack();
+            if (pBJ == 1)
+                pc.p.Cash += (1.5 * pc.p.Wager);
+            
         }
         public static void Decisions()
         {
             int choice = 0;
-            //List<Card> hand = new List<Card>();
-            //List<Card> shoe = new List<Card>();
-            //shoe = _shoe;
-            //hand = _hand;
-            //bool hasSplit = false;
             
-
             if ((pc.p.Hand.Count == 2) && (pc.p.Hand[0].Value == pc.p.Hand[1].Value))
             {
-                Console.WriteLine("Current options: 1:Stay\t2:Hit\t3:Split\t4:Double Down");
+                Console.WriteLine("Current options: 1:Stay\t2:Hit\t3:Split");
                 bool chose = false;
                 while (chose == false)
                 {

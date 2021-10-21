@@ -48,6 +48,7 @@ namespace BlackJack
                 Console.WriteLine("DEALER has BLACKJACK");
             
         }
+        
         public void Hit(List<Card> _shoe)
         {
 

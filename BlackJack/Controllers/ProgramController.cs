@@ -122,7 +122,24 @@ namespace BlackJack
             }
             Console.WriteLine(p.Name + ", your current hand is " + message + " value = " + p.HandValue);
         }
-        
-        
+
+        public int CheckBlackJack()
+        {
+            if (p.Hand[0].Holder.Equals("Ace") || p.Hand[1].Holder.Equals("Ace")){
+                int sum = 0;
+                for(int i = 0; i < p.Hand.Count; i++)
+                {
+                    sum += p.Hand[i].Value;
+                    p.HandValue += sum;
+                }
+                if(sum == 21)
+                {
+                    Console.WriteLine("Player has BLACKJACK");
+                    return 1;
+                }
+                
+            }
+            return 0;
+        }
     }
 }
